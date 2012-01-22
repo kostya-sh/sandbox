@@ -170,7 +170,7 @@ def create_page_link(x, y, sizes, direction):
   if direction == 'r':
     text_center = page_width - font_size * len(page) / 2
     text_bottom = page_height / 2 + font_size / 2
-    text = '>'
+    text = '&gt;'
   if direction == 'b':
     text_center = page_width / 2
     text_bottom = page_height - 10
@@ -178,7 +178,7 @@ def create_page_link(x, y, sizes, direction):
   if direction == 'l':
     text_center = font_size * len(page) / 2
     text_bottom = page_height / 2 + font_size / 2
-    text = '<'
+    text = '&lt;'
   if direction == 'o':
     page = "overview"
     text = 'O'
