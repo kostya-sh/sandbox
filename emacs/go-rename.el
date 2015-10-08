@@ -5,10 +5,12 @@
 ;; license that can be found in the LICENSE file.
 
 ;; Version: 0.1
-;; URL: https://golang.org/x/tools/cmd/gorename
 ;; Package-Requires: ((go-mode "1.3.1"))
+;; Keywords: tools
 
 ;;; Commentary:
+
+;; To install:
 
 ;; % go get golang.org/x/tools/cmd/gorename
 ;; % go build golang.org/x/tools/cmd/gorename
@@ -33,8 +35,8 @@
   :group 'go-rename)
 
 (defun go-rename (new-name &optional force)
-  "Rename the entity denoted by the identifier at point to NEW-NAME, using the
-`gorename' tool.  With FORCE, call `gorename' with the
+  "Rename the entity denoted by the identifier at point, using
+the `gorename' tool. With FORCE, call `gorename' with the
 `-force' flag."
   (interactive (list (read-string "New name: " (thing-at-point 'symbol))
                      current-prefix-arg))
