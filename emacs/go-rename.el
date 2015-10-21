@@ -8,8 +8,6 @@
 ;; Package-Requires: ((go-mode "1.3.1"))
 ;; Keywords: tools
 
-;;; Commentary:
-
 ;; To install:
 
 ;; % go get golang.org/x/tools/cmd/gorename
@@ -18,8 +16,6 @@
 
 ;; The go-rename-command variable can be customized to specify an
 ;; alternative location for the installed command.
-
-;;; Code:
 
 (require 'compile)
 (require 'go-mode)
