@@ -99,5 +99,3 @@ the `gorename' tool. With FORCE, call `gorename' with the
                             (buffer-substring (point-min) (point-max))))
 
 (provide 'go-rename)
-
-;;; go-rename.el ends here
