@@ -1,7 +1,15 @@
 ;;; go-oracle.el --- Integration of the Go 'oracle' analysis tool into Emacs.
 
+;; Copyright 2014 The Go Authors. All rights reserved.
+;; Use of this source code is governed by a BSD-style
+;; license that can be found in the LICENSE file.
+
+;; Version: 0.1
+;; Package-Requires: ((go-mode "1.3.1") (cl-lib "0.5"))
+;; Keywords: tools
+
 ;;; Commentary:
-;;
+
 ;; To install the Go oracle, run:
 ;; % export GOROOT=... GOPATH=...
 ;; % go get golang.org/x/tools/cmd/oracle
@@ -12,10 +20,10 @@
 ;; go-oracle-mode, select an expression of interest, and press `C-c C-o d'
 ;; (for "describe") or run one of the other go-oracle-xxx commands.
 
+;;; Code:
+
 ;; TODO(adonovan): simplify installation and configuration by making
 ;; oracle a subcommand of 'go tool'.
-
-;;; Code:
 
 (require 'compile)
 (require 'go-mode)
@@ -63,7 +71,7 @@
 ;; automatically call it when no scope has been set. Also it wouldn't
 ;; easily allow specifying more than one file/package.
 (defun go-oracle-set-scope ()
-  "Set the scope for the Go oracle, prompting the user to edit the 
+  "Set the scope for the Go oracle, prompting the user to edit the
 previous scope.
 
 The scope specifies a set of arguments, separated by spaces.
@@ -165,65 +173,77 @@ file name with a small hyperlink.  Display the result."
         (shrink-window-if-larger-than-buffer w)
         (set-window-point w (point-min))))))
 
+;;;###autoload
 (defun go-oracle-callees ()
   "Show possible callees of the function call at the current point."
   (interactive)
   (go-oracle--run "callees" t))
 
+;;;###autoload
 (defun go-oracle-callers ()
   "Show the set of callers of the function containing the current point."
   (interactive)
   (go-oracle--run "callers" t))
 
+;;;###autoload
 (defun go-oracle-callgraph ()
   "Show the callgraph of the current program."
   (interactive)
   (go-oracle--run "callgraph" t))
 
+;;;###autoload
 (defun go-oracle-callstack ()
   "Show an arbitrary path from a root of the call graph to the
 function containing the current point."
   (interactive)
   (go-oracle--run "callstack" t))
 
+;;;###autoload
 (defun go-oracle-definition ()
   "Show the definition of the selected identifier."
   (interactive)
   (go-oracle--run "definition"))
 
+;;;###autoload
 (defun go-oracle-describe ()
   "Describe the selected syntax, its kind, type and methods."
   (interactive)
   (go-oracle--run "describe"))
 
+;;;###autoload
 (defun go-oracle-pointsto ()
   "Show what the selected expression points to."
   (interactive)
   (go-oracle--run "pointsto" t))
 
+;;;###autoload
 (defun go-oracle-implements ()
   "Describe the 'implements' relation for types in the package
 containing the current point."
   (interactive)
   (go-oracle--run "implements"))
 
+;;;###autoload
 (defun go-oracle-freevars ()
   "Enumerate the free variables of the current selection."
   (interactive)
   (go-oracle--run "freevars"))
 
+;;;###autoload
 (defun go-oracle-peers ()
   "Enumerate the set of possible corresponding sends/receives for
 this channel receive/send operation."
   (interactive)
   (go-oracle--run "peers" t))
 
+;;;###autoload
 (defun go-oracle-referrers ()
   "Enumerate all references to the object denoted by the selected
 identifier."
   (interactive)
   (go-oracle--run "referrers"))
 
+;;;###autoload
 (defun go-oracle-whicherrs ()
   "Show globals, constants and types to which the selected
 expression (of type 'error') may refer."
