@@ -27,7 +27,7 @@
 
 (require 'compile)
 (require 'go-mode)
-(require 'cl)
+(require 'cl-lib)
 
 (defgroup go-oracle nil
   "Options specific to the Go oracle."
