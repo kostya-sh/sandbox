@@ -55,9 +55,37 @@ const (
 
 const helloWorldString = "Hello, World!"
 
+const (
+	layoutHTML = `<!DOCTYPE html>
+<html>
+<head>
+<title>Fortunes</title>
+</head>
+<body>
+{{template "content" .}}
+</body>
+</html>`
+
+	fortuneHTML = `{{define "content"}}
+<table>
+<tr>
+<th>id</th>
+<th>message</th>
+</tr>
+{{range .}}
+<tr>
+<td>{{.Id}}</td>
+<td>{{.Message}}</td>
+</tr>
+{{end}}
+</table>
+{{end}}`
+)
+
 var (
 	// Templates
-	tmpl = template.Must(template.ParseFiles("templates/layout.html", "templates/fortune.html"))
+	tmpl = template.Must(template.New("layout.html").Parse(layoutHTML))
+	_    = template.Must(tmpl.New("fortune.html").Parse(fortuneHTML))
 
 	// Database
 	db *sql.DB
