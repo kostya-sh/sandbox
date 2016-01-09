@@ -1,0 +1,269 @@
+* Initial Setup
+
+./db.sh IP1
+./load.sh IP2
+./app.sh IP3
+
+
+* results
+
+** non-ps vs ps (db)
+
+for i in 1 2 4 8 16 32 ; do ./wrk -t$i -c$i -d15s http://172.16.0.61:8080/db ; done
+
+
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   833.54us    1.09ms  20.74ms   96.67%
+    Req/Sec     1.45k   130.97     1.66k    77.33%
+  21626 requests in 15.00s, 2.88MB read
+Requests/sec:   1441.28
+Transfer/sec:    196.74KB
+
+  2 threads and 2 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   825.02us    0.99ms  20.04ms   96.50%
+    Req/Sec     1.44k   155.56     1.64k    81.33%
+  42950 requests in 15.01s, 5.73MB read
+Requests/sec:   2862.35
+Transfer/sec:    390.72KB
+
+4 threads and 4 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.53ms    2.03ms  14.06ms   87.34%
+    Req/Sec     1.13k    94.36     1.30k    78.83%
+  67473 requests in 15.01s, 8.99MB read
+Requests/sec:   4495.43
+Transfer/sec:    613.64KB
+
+8 threads and 8 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     2.31ms    2.62ms  17.59ms   82.83%
+    Req/Sec   733.25     35.24   828.00     67.00%
+  87611 requests in 15.01s, 11.68MB read
+Requests/sec:   5836.06
+Transfer/sec:    796.63KB
+
+  16 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     3.08ms    3.19ms  22.33ms   80.13%
+    Req/Sec   476.94     29.56   610.00     71.62%
+  114027 requests in 15.02s, 15.20MB read
+Requests/sec:   7593.40
+Transfer/sec:      1.01MB
+
+32 threads and 32 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.21ms    3.58ms  31.49ms   81.32%
+    Req/Sec   282.45     20.74   360.00     71.62%
+  135132 requests in 15.02s, 18.01MB read
+Requests/sec:   8996.66
+Transfer/sec:      1.20MB
+
+
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   731.81us  751.93us  20.74ms   97.72%
+    Req/Sec     1.52k    92.21     1.64k    82.00%
+  22643 requests in 15.00s, 3.02MB read
+Requests/sec:   1509.40
+Transfer/sec:    206.03KB
+Running 15s test @ http://172.16.0.61:8080/db
+  2 threads and 2 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   802.35us    0.98ms  23.55ms   96.52%
+    Req/Sec     1.46k   193.36     1.66k    85.71%
+  43805 requests in 15.10s, 5.84MB read
+Requests/sec:   2901.08
+Transfer/sec:    396.01KB
+Running 15s test @ http://172.16.0.61:8080/db
+  4 threads and 4 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.74ms    6.53ms 204.12ms   97.77%
+    Req/Sec     1.09k   136.37     1.35k    78.63%
+  64911 requests in 15.01s, 8.65MB read
+Requests/sec:   4323.28
+Transfer/sec:    590.14KB
+Running 15s test @ http://172.16.0.61:8080/db
+  8 threads and 8 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     2.35ms    2.77ms  33.30ms   83.31%
+    Req/Sec   703.43     47.03   848.00     72.83%
+  84072 requests in 15.02s, 11.21MB read
+Requests/sec:   5597.19
+Transfer/sec:    764.05KB
+Running 15s test @ http://172.16.0.61:8080/db
+  16 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     3.28ms    3.59ms  28.76ms   82.00%
+    Req/Sec   456.43     34.94   565.00     70.83%
+  109133 requests in 15.02s, 14.55MB read
+Requests/sec:   7267.62
+Transfer/sec:      0.97MB
+Running 15s test @ http://172.16.0.61:8080/db
+  32 threads and 32 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.42ms    3.92ms  30.03ms   80.44%
+    Req/Sec   274.47     24.12   464.00     64.94%
+  131330 requests in 15.03s, 17.51MB read
+Requests/sec:   8737.17
+Transfer/sec:      1.16MB
+ubuntu@ip-172-16-0-8:~$ 
+
+** queries
+
+for i in 1 2 4 8 16 32 ; do ./wrk -t$i -c$i -d15s http://172.16.0.61:8080/queries?queries=20 ; done
+
+
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.42ms    1.33ms  25.35ms   94.36%
+    Req/Sec   119.41      9.10   131.00     50.00%
+  1785 requests in 15.02s, 1.27MB read
+Requests/sec:    118.88
+Transfer/sec:     86.67KB
+Running 15s test @ http://172.16.0.61:8080/queries?queries=20
+  2 threads and 2 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.64ms    1.59ms  34.08ms   92.91%
+    Req/Sec   116.58      8.86   131.00     78.00%
+  3486 requests in 15.02s, 2.48MB read
+Requests/sec:    232.07
+Transfer/sec:    169.19KB
+Running 15s test @ http://172.16.0.61:8080/queries?queries=20
+  4 threads and 4 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    10.26ms   10.45ms 219.80ms   98.64%
+    Req/Sec   105.36     14.94   130.00     76.76%
+  6289 requests in 15.02s, 4.48MB read
+Requests/sec:    418.67
+Transfer/sec:    305.27KB
+Running 15s test @ http://172.16.0.61:8080/queries?queries=20
+  8 threads and 8 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    16.05ms    8.31ms 220.82ms   98.47%
+    Req/Sec    63.73      5.52    80.00     59.95%
+  7632 requests in 15.02s, 5.43MB read
+Requests/sec:    508.03
+Transfer/sec:    370.39KB
+Running 15s test @ http://172.16.0.61:8080/queries?queries=20
+  16 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    29.34ms   11.29ms 249.75ms   92.12%
+    Req/Sec    34.61      6.47    50.00     92.82%
+  8295 requests in 15.02s, 5.91MB read
+Requests/sec:    552.18
+Transfer/sec:    402.56KB
+Running 15s test @ http://172.16.0.61:8080/queries?queries=20
+  32 threads and 32 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    60.93ms   31.73ms 445.34ms   90.12%
+    Req/Sec    17.73      5.68    30.00     64.94%
+  8268 requests in 15.02s, 5.89MB read
+Requests/sec:    550.34
+Transfer/sec:    401.23KB
+
+* update non-ps
+
+buntu@ip-172-16-0-8:~$ for i in 1 2 4 8 16 32 ; do ./wrk -t$i -c$i -d15s http://172.16.0.61:8080/update?queries=20 ; done
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    50.84ms   12.01ms 148.07ms   85.23%
+    Req/Sec    19.83      5.15    30.00     74.50%
+  296 requests in 15.02s, 215.79KB read
+Requests/sec:     19.70
+Transfer/sec:     14.36KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  2 threads and 2 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    49.57ms    9.12ms  99.95ms   84.02%
+    Req/Sec    20.16      4.80    30.00     77.00%
+  605 requests in 15.02s, 441.16KB read
+Requests/sec:     40.28
+Transfer/sec:     29.37KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  4 threads and 4 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    57.57ms   15.66ms 260.34ms   89.19%
+    Req/Sec    17.49      4.68    30.00     72.07%
+  1048 requests in 15.02s, 764.16KB read
+Requests/sec:     69.75
+Transfer/sec:     50.86KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  8 threads and 8 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    64.08ms   10.89ms 168.30ms   84.88%
+    Req/Sec    15.63      4.97    20.00     56.42%
+  1871 requests in 15.02s, 1.33MB read
+Requests/sec:    124.53
+Transfer/sec:     90.79KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  16 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   120.11ms   18.68ms 324.10ms   85.11%
+    Req/Sec     8.97      2.03    10.00     79.86%
+  1992 requests in 15.02s, 1.42MB read
+Requests/sec:    132.59
+Transfer/sec:     96.68KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  32 threads and 32 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   219.62ms   20.33ms 372.79ms   80.59%
+    Req/Sec     4.58      0.89    10.00     79.48%
+  2174 requests in 15.03s, 1.55MB read
+Requests/sec:    144.63
+Transfer/sec:    105.45KB
+
+** update ps
+
+ubuntu@ip-172-16-0-8:~$ for i in 1 2 4 8 16 32 ; do ./wrk -t$i -c$i -d15s http://172.16.0.61:8080/update?queries=20 ; done
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    50.19ms   13.95ms 129.46ms   89.22%
+    Req/Sec    20.09      5.77    30.00     67.79%
+  300 requests in 15.02s, 218.73KB read
+Requests/sec:     19.97
+Transfer/sec:     14.56KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  2 threads and 2 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    45.98ms    7.01ms  87.19ms   76.99%
+    Req/Sec    21.73      4.67    30.00     75.33%
+  652 requests in 15.02s, 475.42KB read
+Requests/sec:     43.42
+Transfer/sec:     31.66KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  4 threads and 4 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    60.25ms   25.85ms 217.00ms   89.86%
+    Req/Sec    17.66      5.12    30.00     73.91%
+  1025 requests in 15.02s, 747.35KB read
+Requests/sec:     68.23
+Transfer/sec:     49.75KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  8 threads and 8 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    70.93ms   34.82ms 375.69ms   93.60%
+    Req/Sec    15.16      5.23    20.00     96.50%
+  1765 requests in 15.04s, 1.26MB read
+Requests/sec:    117.39
+Transfer/sec:     85.58KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  16 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   101.55ms   17.71ms 306.24ms   87.62%
+    Req/Sec    10.07      2.08    20.00     92.22%
+  2363 requests in 15.02s, 1.68MB read
+Requests/sec:    157.27
+Transfer/sec:    114.67KB
+Running 15s test @ http://172.16.0.61:8080/update?queries=20
+  32 threads and 32 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   193.06ms   27.51ms 366.85ms   83.81%
+    Req/Sec     5.55      1.94    10.00     77.38%
+  2471 requests in 15.02s, 1.76MB read
+Requests/sec:    164.46
+Transfer/sec:    119.91KB
+ubuntu@ip-172-16-0-8:~$ 
