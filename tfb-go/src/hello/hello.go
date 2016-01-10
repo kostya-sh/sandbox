@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
@@ -14,6 +15,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -45,7 +47,7 @@ const (
 	// Before Go 1.5 is released, we can see real power of Go with this benchmark.
 	// After Go 1.5 is released, we can see prepared statement vs interpolation by comparing
 	// this and another lightweight Go framework.
-	connectionString   = "benchmarkdbuser:benchmarkdbpass@tcp(localhost:3306)/hello_world?interpolateParams=true"
+	connectionString   = "benchmarkdbuser:benchmarkdbpass@tcp(${DBHOST}:3306)/hello_world?interpolateParams=true"
 	worldSelect        = "SELECT id, randomNumber FROM World WHERE id = ?"
 	worldUpdate        = "UPDATE World SET randomNumber = ? WHERE id = ?"
 	fortuneSelect      = "SELECT id, message FROM Fortune;"
@@ -106,7 +108,13 @@ func main() {
 	}
 
 	var err error
-	db, err = sql.Open("mysql", connectionString)
+	var dbHost = os.Getenv("DBHOST")
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+	var dbURL = strings.Replace(connectionString, "${DBHOST}", dbHost, 1)
+	fmt.Printf("DB: %s\n", dbURL)
+	db, err = sql.Open("mysql", dbURL)
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
