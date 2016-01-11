@@ -2,9 +2,12 @@
 
 sudo -i
 
+export DEBIAN_FRONTEND=noninteractive
+
 apt-get update
-apt-get -y install mysql-server
 apt-get -y install sysstat
+apt-get -y install mysql-server
+
 
 sed -i 's|\[mysqld\]|\[mysqld\]\
 lower_case_table_names = 1\
