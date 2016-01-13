@@ -22,7 +22,7 @@ hello
 
 ** On load (IP2):
 
-export LOADHOST=172.16.0.x (internal IP3)
+export APPHOST=172.16.0.x (internal IP3)
 ./json.sh
 ./db.sh
 ./queries.sh 1 && ./queries.sh 5 && ./queries.sh 10 && ./queries.sh 20

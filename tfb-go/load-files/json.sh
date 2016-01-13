@@ -1,6 +1,6 @@
 #!/bin/bash
 
-URL="http://${LOADHOST:-localhost}:8080/json"
+URL="http://${APPHOST:-localhost}:8080/json"
 
 echo $URL
 for i in 1 2 4 8 16 32 64 128 ; do
