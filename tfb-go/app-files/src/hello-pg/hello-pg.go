@@ -63,7 +63,7 @@ const (
 	// It reduces round trips without prepared statement.
 	//
 	// We can see difference between prepared statement and interpolation by comparing go-raw and go-raw-interpolate
-	connectionString = "postgres://benchmarkdbuser:benchmarkdbpass@%s/hello_world"
+	connectionString = "postgres://benchmarkdbuser:benchmarkdbpass@%s/hello_world?sslmode=disable"
 	worldSelect      = "SELECT id, randomNumber FROM World WHERE id = $1"
 	worldUpdate      = "UPDATE World SET randomNumber = $1 WHERE id = $2"
 	fortuneSelect    = "SELECT id, message FROM Fortune"
