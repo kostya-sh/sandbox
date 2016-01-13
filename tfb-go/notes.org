@@ -1,24 +1,31 @@
 * Initial Setup
 
-./db.sh IP1
-./load.sh IP2
-./app.sh IP3
+./setup-host.sh db IP1
+./setup-host.sh load IP2
+./setup-host.sh app IP3
+
+OR
+
+./setup-all.sh IP1 IP2 IP3
 
 * Running benchmarks
 
-On app (IP3):
+** On db (IP1)
+
+sudo service mysql restart
+
+** On app (IP3):
 
 go get -v hello
 export DBHOST=172.16.0.x (internal IP2)
 hello
 
-On load (IP2):
+** On load (IP2):
 
 export LOADHOST=172.16.0.x (internal IP3)
 ./json.sh
 ./db.sh
 ./queries.sh 1 && ./queries.sh 5 && ./queries.sh 10 && ./queries.sh 20
-
 
 * Results
 
