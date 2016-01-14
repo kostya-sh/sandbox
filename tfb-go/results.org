@@ -230,7 +230,7 @@ Threads	Conns	Reqs/s	Speed	Avg Lat	Max Lat
 * m4.4xlarge 2015-01-13 postgresql vs mysql, prepared statements vs non-prepared statements
 
 ** /json
-7830.65	1.11MB	253.34us	0.86ms
+
 4	4	16152.78	2.28MB	246.33us	0.97ms
 8	8	31415.93	4.43MB	253.54us	0.93ms
 16	16	57458.49	8.11MB	277.89us	1.31ms
@@ -396,3 +396,22 @@ Threads	Conns	Reqs/s	Speed	Avg Lat	Max Lat
 32	32	641.31	475.07KB	50.19ms	254.10ms
 64	64	1033.60	765.70KB	61.85ms	344.84ms
 128	128	1635.62	1.18MB	78.24ms	290.74ms
+
+* m4.4xlarge 2015-01-14 go1.5 vs go 1.6beta2
+
+** /json
+
+*** 1.5
+
+
+*** 1.6beta2
+
+Threads	Conns	Reqs/s	Speed	Avg Lat	Max Lat
+1	1	3276.60	473.57KB	1.62ms	200.74ms
+2	2	6292.77	0.89MB	316.06us	1.70ms
+4	4	14386.54	2.03MB	277.29us	1.73ms
+8	8	27215.41	3.84MB	1.76ms	202.72ms
+16	16	50314.87	7.10MB	654.24us	204.10ms
+32	32	82555.01	11.65MB	401.43us	2.38ms
+64	64	125231.21	17.68MB	774.42us	202.68ms
+128	128	147590.27	20.83MB	1.43ms	204.76ms
