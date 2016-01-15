@@ -15,11 +15,14 @@ OR
 ** On db (IP1)
 
 sudo service mysql restart
+sudo service postgresql restart
 
 ** On app (IP3):
 
-go get -v hello
 export DBHOST=172.16.0.x (internal IP2)
+. go15.profile
+(or . go16.profile)
+go get -v hello
 hello
 
 ** On load (IP2):
@@ -27,4 +30,5 @@ hello
 export APPHOST=172.16.0.x (internal IP3)
 ./json.sh
 ./db.sh
+./fortune.sh
 ./queries.sh 1 && ./queries.sh 5 && ./queries.sh 10 && ./queries.sh 20
