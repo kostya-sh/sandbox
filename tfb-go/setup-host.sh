@@ -17,20 +17,8 @@ files=$type-files
 
 if [ -d $files ] ; then
   echo "Copying files"
-  rsync -e "ssh -i key.pem" -rcEzi $files/ ubuntu@$host:.
+  rsync -e "ssh -i key.pem" -rcEzit common-files/ $files/ ubuntu@$host:.
 
-  if [ -f $files/sudo-setup.sh ] ; then
-    echo "Running sudo-setup if necessary"
-    $sshcmd "if [ ! -f sudo-setup.done ] ; then sudo /bin/bash sudo-setup.sh && touch sudo-setup.done ; fi"
-  fi
-
-  if [ -f $files/setup.sh ] ; then
-    echo "Running setup if necessary"
-    $sshcmd "if [ ! -f setup.done ] ; then /bin/bash setup.sh && touch setup.done ; fi"
-  fi
-
-  if [ -d $files/sysconfig ] ; then
-    echo "Copying system config files"
-    $sshcmd sudo cp -ruv sysconfig/* /
-  fi
+  echo "Running setup if necessary"
+  $sshcmd "/bin/bash run-setup.sh"
 fi

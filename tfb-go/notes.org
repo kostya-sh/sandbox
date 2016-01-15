@@ -1,5 +1,7 @@
 * Initial Setup
 
+copy key.pem to this directory
+
 ./setup-host.sh db IP1
 ./setup-host.sh load IP2
 ./setup-host.sh app IP3

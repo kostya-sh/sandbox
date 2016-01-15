@@ -115,6 +115,8 @@ func initDB() {
 }
 
 func main() {
+	fmt.Println("runtime version: ", runtime.Version())
+
 	var listener net.Listener
 	flag.Parse()
 	if !*prefork {
