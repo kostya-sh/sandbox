@@ -13,8 +13,11 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"runtime/pprof"
 	"sort"
 	"strconv"
+	"strings"
+	"sync"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -137,6 +140,9 @@ func main() {
 	http.HandleFunc("/update", updateHandler)
 	http.HandleFunc("/updateInterpolate", updateInterpolateHandler)
 	http.HandleFunc("/plaintext", plaintextHandler)
+	// profiling
+	http.HandleFunc("/profile/start", startProfileHandler)
+	http.HandleFunc("/profile/stop", stopProfileHandler)
 	if !*prefork {
 		http.ListenAndServe(":8080", nil)
 	} else {
@@ -189,6 +195,52 @@ func doPrefork() (listener net.Listener) {
 		runtime.GOMAXPROCS(2)
 	}
 	return listener
+}
+
+var profileFile *os.File
+var profileMu sync.Mutex
+
+func startProfileHandler(w http.ResponseWriter, r *http.Request) {
+	profileMu.Lock()
+	defer profileMu.Unlock()
+	if profileFile != nil {
+		http.Error(w, "Profiling in progress", http.StatusBadRequest)
+		return
+	}
+	f := r.URL.Query().Get("f")
+	if f == "" {
+		http.Error(w, "f query parameter is required", http.StatusBadRequest)
+		return
+	}
+	if !strings.HasSuffix(f, ".prof") {
+		f += ".prof"
+	}
+	var err error
+	profileFile, err = os.OpenFile(f, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Println("Started CPU profiling:", f)
+	pprof.StartCPUProfile(profileFile)
+}
+
+func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
+	profileMu.Lock()
+	defer profileMu.Unlock()
+
+	if profileFile == nil {
+		http.Error(w, "Profiling not in progress", http.StatusBadRequest)
+		return
+	}
+	pprof.StopCPUProfile()
+	if err := profileFile.Close(); err != nil {
+		log.Fatal(err)
+	}
+	profileFile = nil
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("stopped"))
 }
 
 func getQueriesParam(r *http.Request) int {
