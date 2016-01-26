@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"runtime"
 	"runtime/pprof"
+	"runtime/trace"
 	"sort"
 	"strconv"
 	"strings"
@@ -198,31 +199,51 @@ func doPrefork() (listener net.Listener) {
 }
 
 var profileFile *os.File
+var traceFile *os.File
 var profileMu sync.Mutex
 
 func startProfileHandler(w http.ResponseWriter, r *http.Request) {
 	profileMu.Lock()
 	defer profileMu.Unlock()
+
 	if profileFile != nil {
 		http.Error(w, "Profiling in progress", http.StatusBadRequest)
 		return
 	}
-	f := r.URL.Query().Get("f")
-	if f == "" {
+	pf := r.URL.Query().Get("f")
+	if pf == "" {
 		http.Error(w, "f query parameter is required", http.StatusBadRequest)
 		return
 	}
-	if !strings.HasSuffix(f, ".prof") {
-		f += ".prof"
+	if !strings.HasSuffix(pf, ".prof") {
+		pf += ".prof"
 	}
+
 	var err error
-	profileFile, err = os.OpenFile(f, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	profileFile, err = os.OpenFile(pf, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println("Started CPU profiling:", f)
-	pprof.StartCPUProfile(profileFile)
+	err = pprof.StartCPUProfile(profileFile)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Println("Started CPU profiling:", pf)
+
+	tf := pf[0:len(pf)-4] + "trace"
+	traceFile, err = os.OpenFile(tf, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = trace.Start(traceFile)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Println("Tracing to:", tf)
 }
 
 func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -238,6 +259,11 @@ func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	profileFile = nil
+	trace.Stop()
+	if err := traceFile.Close(); err != nil {
+		log.Fatal(err)
+	}
+	traceFile = nil
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("stopped"))
