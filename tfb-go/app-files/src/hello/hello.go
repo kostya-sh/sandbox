@@ -141,9 +141,11 @@ func main() {
 	http.HandleFunc("/update", updateHandler)
 	http.HandleFunc("/updateInterpolate", updateInterpolateHandler)
 	http.HandleFunc("/plaintext", plaintextHandler)
-	// profiling
+	// profiling & tracing
 	http.HandleFunc("/profile/start", startProfileHandler)
 	http.HandleFunc("/profile/stop", stopProfileHandler)
+	http.HandleFunc("/trace/start", startTraceHandler)
+	http.HandleFunc("/trace/stop", stopTraceHandler)
 	if !*prefork {
 		http.ListenAndServe(":8080", nil)
 	} else {
@@ -199,7 +201,6 @@ func doPrefork() (listener net.Listener) {
 }
 
 var profileFile *os.File
-var traceFile *os.File
 var profileMu sync.Mutex
 
 func startProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -210,17 +211,17 @@ func startProfileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profiling in progress", http.StatusBadRequest)
 		return
 	}
-	pf := r.URL.Query().Get("f")
-	if pf == "" {
+	f := r.URL.Query().Get("f")
+	if f == "" {
 		http.Error(w, "f query parameter is required", http.StatusBadRequest)
 		return
 	}
-	if !strings.HasSuffix(pf, ".prof") {
-		pf += ".prof"
+	if !strings.HasSuffix(f, ".prof") {
+		f += ".prof"
 	}
 
 	var err error
-	profileFile, err = os.OpenFile(pf, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	profileFile, err = os.OpenFile(f, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -230,20 +231,7 @@ func startProfileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println("Started CPU profiling:", pf)
-
-	tf := pf[0:len(pf)-4] + "trace"
-	traceFile, err = os.OpenFile(tf, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	err = trace.Start(traceFile)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	log.Println("Tracing to:", tf)
+	log.Println("Started CPU profiling:", f)
 }
 
 func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -259,6 +247,53 @@ func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	profileFile = nil
+	log.Println("Stopped CPU profiling")
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("profile stopped"))
+}
+
+var traceFile *os.File
+var traceMu sync.Mutex
+
+func startTraceHandler(w http.ResponseWriter, r *http.Request) {
+	traceMu.Lock()
+	defer traceMu.Unlock()
+
+	if traceFile != nil {
+		http.Error(w, "Tracing in progress", http.StatusBadRequest)
+		return
+	}
+	f := r.URL.Query().Get("f")
+	if f == "" {
+		http.Error(w, "f query parameter is required", http.StatusBadRequest)
+		return
+	}
+	if !strings.HasSuffix(f, ".trace") {
+		f += ".trace"
+	}
+
+	var err error
+	traceFile, err = os.OpenFile(f, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = trace.Start(traceFile)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Println("Started tracing:", f)
+}
+
+func stopTraceHandler(w http.ResponseWriter, r *http.Request) {
+	traceMu.Lock()
+	defer traceMu.Unlock()
+
+	if traceFile == nil {
+		http.Error(w, "Trace not in progress", http.StatusBadRequest)
+		return
+	}
 	trace.Stop()
 	if err := traceFile.Close(); err != nil {
 		log.Fatal(err)
@@ -266,7 +301,7 @@ func stopProfileHandler(w http.ResponseWriter, r *http.Request) {
 	traceFile = nil
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("stopped"))
+	w.Write([]byte("Stopped tracing"))
 }
 
 func getQueriesParam(r *http.Request) int {
