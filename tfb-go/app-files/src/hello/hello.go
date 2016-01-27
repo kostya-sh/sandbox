@@ -90,6 +90,7 @@ var (
 
 var prefork = flag.Bool("prefork", false, "use prefork")
 var child = flag.Bool("child", false, "is child proc")
+var nodb = flag.Bool("nodb", false, "do not connect to the db")
 
 func initDB() {
 	var err error
@@ -97,7 +98,9 @@ func initDB() {
 	if dbhost == "" {
 		dbhost = "localhost"
 	}
-	db, err = sql.Open("mysql", fmt.Sprintf(connectionString, dbhost))
+	ds := fmt.Sprintf(connectionString, dbhost)
+	log.Println("Connecting to", ds)
+	db, err = sql.Open("mysql", ds)
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
@@ -119,17 +122,21 @@ func initDB() {
 }
 
 func main() {
-	fmt.Println("runtime version: ", runtime.Version())
+	log.Println("runtime version:", runtime.Version())
 
 	var listener net.Listener
 	flag.Parse()
 	if !*prefork {
-		runtime.GOMAXPROCS(runtime.NumCPU())
+		newProcs := runtime.NumCPU()
+		oldProcs := runtime.GOMAXPROCS(newProcs)
+		log.Println("Changed GOMAXPROCS from", oldProcs, "to", newProcs)
 	} else {
 		listener = doPrefork()
 	}
 
-	initDB()
+	if !*nodb {
+		initDB()
+	}
 
 	http.HandleFunc("/json", jsonHandler)
 	http.HandleFunc("/db", dbHandler)
@@ -147,9 +154,9 @@ func main() {
 	http.HandleFunc("/trace/start", startTraceHandler)
 	http.HandleFunc("/trace/stop", stopTraceHandler)
 	if !*prefork {
-		http.ListenAndServe(":8080", nil)
+		log.Fatal(http.ListenAndServe(":8080", nil))
 	} else {
-		http.Serve(listener, nil)
+		log.Fatal(http.Serve(listener, nil))
 	}
 }
 
