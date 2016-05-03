@@ -12,12 +12,12 @@ host=$2
 
 echo "$type $host"
 
-sshcmd="ssh -i key.pem ubuntu@$host"
+sshcmd="ssh -oStrictHostKeyChecking=no -i key.pem ubuntu@$host"
 files=$type-files
 
 if [ -d $files ] ; then
   echo "Copying files"
-  rsync -e "ssh -i key.pem" -rcEzit common-files/ $files/ ubuntu@$host:.
+  rsync -e "ssh -oStrictHostKeyChecking=no -i key.pem" -rcEzit common-files/ $files/ ubuntu@$host:.
 
   echo "Running setup if necessary"
   $sshcmd "/bin/bash run-setup.sh"

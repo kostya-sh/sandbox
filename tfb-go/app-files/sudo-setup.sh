@@ -1,4 +1,4 @@
 #!/bin/bash
 
 apt-get update
-apt-get -y install git
+apt-get -y install git gcc

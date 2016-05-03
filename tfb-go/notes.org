@@ -14,8 +14,6 @@ OR
 
 ** On db (IP1)
 
-sudo service mysql restart
-sudo service postgresql restart
 
 ** On app (IP3):
 
