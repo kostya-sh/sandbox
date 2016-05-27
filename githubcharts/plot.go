@@ -25,7 +25,7 @@ func (e eventsByTime) Len() int           { return len(e) }
 func (e eventsByTime) Less(i, j int) bool { return e[i].time.Before(e[j].time) }
 func (e eventsByTime) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
 
-func plotOpenClose(fn string, outf string) error {
+func plotOpenClose(fn string, outf string, start time.Time) error {
 	f, err := os.Open(fn)
 	if err != nil {
 		return err
@@ -56,7 +56,6 @@ func plotOpenClose(fn string, outf string) error {
 	opened := 0
 	closed := 0
 	open := 0
-	// start, _ := time.Parse("2006-01-02", "2014-12-09")
 	for _, e := range events {
 		if e.diff > 0 {
 			opened++
@@ -64,7 +63,11 @@ func plotOpenClose(fn string, outf string) error {
 			closed++
 		}
 		open += e.diff
-		//		if e.time.After(start) {
+
+		if !start.IsZero() && e.time.Before(start) {
+			continue
+		}
+
 		issuesOpened = append(issuesOpened, struct{ X, Y float64 }{
 			X: float64(e.time.Unix()),
 			Y: float64(opened),
@@ -77,7 +80,6 @@ func plotOpenClose(fn string, outf string) error {
 			X: float64(e.time.Unix()),
 			Y: float64(open),
 		})
-		//		}
 	}
 
 	p, err := plot.New()
@@ -90,7 +92,7 @@ func plotOpenClose(fn string, outf string) error {
 	p.Add(plotter.NewGrid())
 
 	err = plotutil.AddLines(p, "Open issues", openIssues)
-	// err = plotutil.AddLinePoints(p,
+	// err = plotutil.AddLines(p,
 	// 	"Issues opened", issuesOpened,
 	// 	"Issues closed", issuesClosed,
 	// )
