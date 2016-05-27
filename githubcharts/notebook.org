@@ -1,0 +1,47 @@
+# -*- org-confirm-babel-evaluate: nil; -*-
+
+** Building the app
+
+#+begin_src sh :results output
+go build 2>&1
+#+end_src
+
+#+RESULTS:
+
+
+** Analysis
+*** gonum-plot
+
+Download data from github
+#+BEGIN_SRC sh :results silent
+./githubcharts get gonum plot
+#+END_SRC
+
+#+RESULTS:
+
+And plot it
+#+BEGIN_SRC sh :results file
+./githubcharts oc gonum plot
+echo gonum-plot.png
+#+END_SRC
+
+#+RESULTS:
+[[file:gonum-plot.png]]
+
+*** golang-go
+
+Download data from github
+#+BEGIN_SRC sh :results silent
+./githubcharts get golang go
+#+END_SRC
+
+#+RESULTS:
+
+And plot it
+#+BEGIN_SRC sh :results file
+./githubcharts oc golang go 2014-12-09
+echo golang-go.png
+#+END_SRC
+
+#+RESULTS:
+[[file:golang-go.png]]
