@@ -15,7 +15,7 @@ import (
 )
 
 type event struct {
-	diff int
+	diff int // +1 for open, -1 for close
 	time time.Time
 }
 
@@ -25,10 +25,10 @@ func (e eventsByTime) Len() int           { return len(e) }
 func (e eventsByTime) Less(i, j int) bool { return e[i].time.Before(e[j].time) }
 func (e eventsByTime) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
 
-func plotOpenClose(fn string, outf string, start time.Time) error {
+func loadEvents(fn string) ([]event, error) {
 	f, err := os.Open(fn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 	r := csv.NewReader(f)
@@ -36,20 +36,27 @@ func plotOpenClose(fn string, outf string, start time.Time) error {
 	for fields, err := r.Read(); err != io.EOF; fields, err = r.Read() {
 		t, err := time.Parse(time.RFC3339, fields[2])
 		if err != nil {
-			return fmt.Errorf("%v: %s", fields, err)
+			return nil, fmt.Errorf("%v: %s", fields, err)
 		}
 		events = append(events, event{1, t})
 
 		if fields[3] != "" {
 			t, err := time.Parse(time.RFC3339, fields[3])
 			if err != nil {
-				return fmt.Errorf("%v: %s", fields, err)
+				return nil, fmt.Errorf("%v: %s", fields, err)
 			}
 			events = append(events, event{-1, t})
 		}
 	}
 	sort.Sort(eventsByTime(events))
+	return events, nil
+}
 
+func plotOpenClose(fn string, outf string, start time.Time) error {
+	events, err := loadEvents(fn)
+	if err != nil {
+		return err
+	}
 	var issuesOpened plotter.XYs
 	var issuesClosed plotter.XYs
 	var openIssues plotter.XYs
@@ -90,12 +97,73 @@ func plotOpenClose(fn string, outf string, start time.Time) error {
 	p.X.Tick.Marker = plot.UnixTimeTicks{Format: "2006-01-02"}
 	p.Y.Label.Text = "Issues"
 	p.Add(plotter.NewGrid())
+	p.Add(NewVLine(float64(time.Date(2016, 2, 17, 0, 0, 0, 0, time.UTC).Unix()))) // 1.6
+	// p.Add(NewVerticalLine(float64(time.Date(2016, 4, 12, 0, 0, 0, 0, time.UTC).Unix()))) // 1.6.1
+	// p.Add(NewVerticalLine(float64(time.Date(2016, 4, 20, 0, 0, 0, 0, time.UTC).Unix()))) // 1.6.2
+
+	p.Add(NewVLine(float64(time.Date(2015, 8, 19, 0, 0, 0, 0, time.UTC).Unix()))) // 1.5
+	// p.Add(NewVerticalLine(float64(time.Date(2015, 9, 8, 0, 0, 0, 0, time.UTC).Unix())))  // 1.5.1
+	// p.Add(NewVerticalLine(float64(time.Date(2015, 12, 2, 0, 0, 0, 0, time.UTC).Unix()))) // 1.5.2
+	// p.Add(NewVerticalLine(float64(time.Date(2015, 1, 13, 0, 0, 0, 0, time.UTC).Unix()))) // 1.5.3
+	// p.Add(NewVerticalLine(float64(time.Date(2015, 4, 12, 0, 0, 0, 0, time.UTC).Unix()))) // 1.5.4
+
+	p.Add(NewVLine(float64(time.Date(2014, 12, 10, 0, 0, 0, 0, time.UTC).Unix()))) // 1.4
 
 	err = plotutil.AddLines(p, "Open issues", openIssues)
 	// err = plotutil.AddLines(p,
 	// 	"Issues opened", issuesOpened,
 	// 	"Issues closed", issuesClosed,
 	// )
+
+	if err != nil {
+		return err
+	}
+
+	return p.Save(30*vg.Centimeter, 20*vg.Centimeter, outf)
+}
+
+func plotByWeek(fn string, outf string, start time.Time) error {
+	events, err := loadEvents(fn)
+	if err != nil {
+		return err
+	}
+	var openned plotter.XYs
+	var closed plotter.XYs
+	for _, e := range events {
+		t := e.time
+		if !start.IsZero() && t.Before(start) {
+			continue
+		}
+		t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()) // round to day
+		t = t.AddDate(0, 0, -int(t.Weekday()))                                // round to week
+		d := float64(t.Unix())
+		if e.diff > 0 {
+			if len(openned) == 0 || d != openned[len(openned)-1].X {
+				openned = append(openned, struct{ X, Y float64 }{d, 1.0})
+			} else {
+				openned[len(openned)-1].Y++
+			}
+		} else {
+			if len(closed) == 0 || d != closed[len(closed)-1].X {
+				closed = append(closed, struct{ X, Y float64 }{d, 1.0})
+			} else {
+				closed[len(closed)-1].Y++
+			}
+		}
+	}
+
+	p, err := plot.New()
+	if err != nil {
+		return err
+	}
+	p.Title.Text = "Issues opened by week for " + fn
+	p.X.Tick.Marker = plot.UnixTimeTicks{Format: "2006-01-02"}
+	p.Y.Label.Text = "Issues"
+	p.Add(plotter.NewGrid())
+
+	err = plotutil.AddLines(p,
+		"Issued closed", closed,
+		"Issued opened", openned)
 
 	if err != nil {
 		return err

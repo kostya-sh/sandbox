@@ -32,16 +32,30 @@ echo gonum-plot.png
 
 Download data from github
 #+BEGIN_SRC sh :results silent
+#export GITHUB_AUTH_TOKEN=123...
 ./githubcharts get golang go
 #+END_SRC
 
 #+RESULTS:
 
 And plot it
+
+**** Open issues
 #+BEGIN_SRC sh :results file
-./githubcharts oc golang go 2014-12-09
-echo golang-go.png
+./githubcharts open golang go 2014-12-09
+echo golang-go_open.png
 #+END_SRC
 
 #+RESULTS:
-[[file:golang-go.png]]
+[[file:golang-go_open.png]]
+
+**** Issues opened by week
+
+#+BEGIN_SRC sh :results file
+  ./githubcharts byweek golang go 2014-12-09
+  echo golang-go_byweek.png
+#+END_SRC
+
+#+RESULTS:
+[[file:golang-go_byweek.png]]
+
