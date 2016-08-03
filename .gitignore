@@ -1,3 +1,4 @@
 githubcharts/*.csv
 githubcharts/*.png
 githubcharts/githubcharts
+rust/*/target
