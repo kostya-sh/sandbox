@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	switch os.Args[1] {
 	case "get":
 		err = get(os.Args[2], os.Args[3], fmt.Sprintf("%s-%s.csv", os.Args[2], os.Args[3]))
-	case "open", "byweek":
+	case "open", "open-gg", "byweek":
 		csv := fmt.Sprintf("%s-%s.csv", os.Args[2], os.Args[3])
 		png := fmt.Sprintf("%s-%s_%s.png", os.Args[2], os.Args[3], os.Args[1])
 		var start time.Time
@@ -24,6 +25,8 @@ func main() {
 		}
 		if os.Args[1] == "open" {
 			err = plotOpenClose(csv, png, start)
+		} else if os.Args[1] == "open-gg" {
+			err = plotOpenCloseGG(csv, strings.Replace(png, ".png", ".svg", -1), start)
 		} else {
 			err = plotByWeek(csv, png, start)
 		}

@@ -46,8 +46,13 @@ And plot it
 echo golang-go_open.png
 #+END_SRC
 
+#+BEGIN_SRC sh :results file
+./githubcharts open-gg golang go 2014-12-09
+echo golang-go_open.svg
+#+END_SRC
+
 #+RESULTS:
-[[file:golang-go_open.png]]
+[[file:golang-go_open.svg]]
 
 **** Issues opened by week
 

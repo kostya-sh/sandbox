@@ -1,4 +1,5 @@
 githubcharts/*.csv
 githubcharts/*.png
+githubcharts/*.svg
 githubcharts/githubcharts
 rust/*/target

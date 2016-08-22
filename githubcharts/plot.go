@@ -8,6 +8,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/aclements/go-gg/gg"
+	"github.com/aclements/go-gg/table"
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/plotutil"
@@ -120,6 +122,62 @@ func plotOpenClose(fn string, outf string, start time.Time) error {
 	}
 
 	return p.Save(30*vg.Centimeter, 20*vg.Centimeter, outf)
+}
+
+func plotOpenCloseGG(fn string, outf string, start time.Time) error {
+	events, err := loadEvents(fn)
+	if err != nil {
+		return err
+	}
+	var time []time.Time
+	var issues []int
+	var types []string
+	opened := 0
+	closed := 0
+	open := 0
+	for _, e := range events {
+		if e.diff > 0 {
+			opened++
+		} else {
+			closed++
+		}
+		open += e.diff
+
+		if !start.IsZero() && e.time.Before(start) {
+			continue
+		}
+
+		// time = append(time, e.time)
+		// issues = append(issues, opened)
+		// types = append(types, "opened")
+		//
+		// time = append(time, e.time)
+		// issues = append(issues, closed)
+		// types = append(types, "closed")
+
+		time = append(time, e.time)
+		issues = append(issues, open)
+		types = append(types, "open")
+	}
+
+	data := table.NewBuilder(nil).
+		Add("time", time).
+		Add("issues", issues).
+		Add("type", types).
+		Done()
+
+	//fmt.Println(data)
+
+	p := gg.NewPlot(data)
+	p.SetScale("x", gg.NewTimeScaler())
+	p.Add(gg.LayerLines{Color: "type"})
+
+	f, err := os.Create(outf)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return p.WriteSVG(f, 1000, 800)
 }
 
 func plotByWeek(fn string, outf string, start time.Time) error {
