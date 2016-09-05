@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 
+	_ "github.com/jackc/pgx/stdlib"
 	_ "github.com/lib/pq"
 )
 
 const (
 	// &disable_prepared_binary_result=yes
-	connURL = "postgres://sa:sa@localhost:5435/test?sslmode=disable&binary_parameters=no&disable_prepared_binary_result=yes"
+	connURL    = "postgres://sa:sa@localhost:5435/mem:test?sslmode=disable"
+	pgxConnURL = "pgx://sa:sa@localhost:5435/mem:test"
 )
 
 var (
@@ -27,6 +29,10 @@ func exec(sql string) {
 func initDB() {
 	var err error
 	db, err = sql.Open("postgres", connURL)
+
+	// Note: break during init due to missing pg_type.typeelem
+	// db, err = sql.Open("pgx", pgxConnURL)
+
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
@@ -50,24 +56,6 @@ func initDB() {
 	exec(`INSERT INTO Fortune (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.')`)
 	exec(`INSERT INTO Fortune (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>')`)
 	exec(`INSERT INTO Fortune (id, message) VALUES (12, 'フレームワークのベンチマーク')`)
-
-	// worldSelectPrepared1, err = db1.Prepare(worldSelect1)
-	// if err != nil {
-	// 	log.Fatalf("Failed to prepare %q: %s", worldSelect1, err)
-	// }
-	// worldUpdatePrepared1, err = db1.Prepare(worldUpdate1)
-	// if err != nil {
-	// 	log.Fatalf("Failed to prepare %q: %s", worldUpdate1, err)
-	// }
-	// fortuneSelectPrepared1, err = db.Prepare(fortuneSelect1)
-	// if err != nil {
-	// 	log.Fatalf("Failed to prepare %q: %s", fortuneSelect1, err)
-	// }
-	//
-	// fortuneSelectPrepared2, err = db.Prepare(fortuneSelect2)
-	// if err != nil {
-	// 	log.Fatalf("Failed to prepare %q: %s", fortuneSelect1, err)
-	// }
 }
 
 func main() {
@@ -76,8 +64,22 @@ func main() {
 	fetchAllFortunes()
 	fmt.Println()
 
+	updateFortune()
+
 	fetchOneFortune()
 	fmt.Println()
+}
+
+func updateFortune() {
+	stmt, err := db.Prepare("UPDATE Fortune set message = ? where id = ?")
+	if err != nil {
+		log.Fatalf("Failed to prepare (updateFortune): %v", err)
+	}
+
+	_, err = stmt.Exec("new fortune", 12)
+	if err != nil {
+		log.Fatalf("Failed to exec (updateFortune)): %v", err)
+	}
 }
 
 func fetchAllFortunes() {
@@ -109,12 +111,12 @@ func fetchAllFortunes() {
 func fetchOneFortune() {
 	stmt, err := db.Prepare("SELECT id, message FROM Fortune where id = $1")
 	if err != nil {
-		log.Fatalf("Failed to prepare (fetchAllFortunes): %v", err)
+		log.Fatalf("Failed to prepare (fetchOneFortune): %v", err)
 	}
 
 	rows, err := stmt.Query(12)
 	if err != nil {
-		log.Fatalf("Failed to query (fetchAllFortunes): %v", err)
+		log.Fatalf("Failed to query (fetchOneFortune): %v", err)
 	}
 	defer rows.Close()
 
@@ -122,12 +124,12 @@ func fetchOneFortune() {
 		var id int
 		var m string
 		if err = rows.Scan(&id, &m); err != nil {
-			log.Fatalf("Failed to scan (fetchAllFortunes)): %s", err)
+			log.Fatalf("Failed to scan (fetchOneFortune)): %s", err)
 		}
 		fmt.Printf("%d\t%s\n", id, m)
 	}
 
 	if rows.Err() != nil {
-		log.Fatalf("Error (fetchAllFortunes)): %s", rows.Err())
+		log.Fatalf("Error (fetchOneFortune)): %s", rows.Err())
 	}
 }
